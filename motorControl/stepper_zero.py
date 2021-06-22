@@ -9,6 +9,7 @@ GPIO.setmode(GPIO.BCM)
 DIR = gpio.OutputDevice(21)
 STEP = gpio.OutputDevice(20)
 SLEEP = gpio.OutputDevice(26)
+BCODE = gpio. InputDevice(6)
 CW = 1
 CCW = 0
 SPR = 200
@@ -21,8 +22,8 @@ VALVE = gpio.OutputDevice(13)
 # GPIO.setup(13, GPIO.OUT)
 # GPIO.output(13, GPIO.HIGH)
 PUMP = gpio.OutputDevice(19)
-VALVE.off()
-PUMP.off()
+VALVE.on()
+PUMP.on()
 
 def turnStepper(deg, direction):
     DIR.on() if direction == 1 else DIR.off()
