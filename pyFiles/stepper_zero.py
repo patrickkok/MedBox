@@ -9,7 +9,6 @@ GPIO.setmode(GPIO.BCM)
 DIR = gpio.OutputDevice(21)
 STEP = gpio.OutputDevice(20)
 SLEEP = gpio.OutputDevice(26)
-BCODE = gpio. InputDevice(6)
 CW = 1
 CCW = 0
 SPR = 200
