@@ -21,7 +21,7 @@ VALVE = gpio.OutputDevice(13)
 # GPIO.setup(13, GPIO.OUT)
 # GPIO.output(13, GPIO.HIGH)
 PUMP = gpio.OutputDevice(19)
-VALVE.on()
+VALVE.off()
 PUMP.on()
 
 def turnStepper(deg, direction):
