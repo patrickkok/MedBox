@@ -5,7 +5,8 @@ from pyzbar.pyzbar import decode
 import gzip
 
 ser = serial.Serial("/dev/ttyS0", 115200, timeout=0.5)
-scanner = gpio.OutputDevice(14)
+scanner = gpio.OutputDevice(4)
+scanner.on()
 if ser != None:
     print('serial connected')
     
@@ -13,10 +14,17 @@ else:
     print('failed')
 
 x = b''
-while x == b'':
+while True:
     x = ser.readline()
-    print(x)
-    time.sleep(3)
+    print(tuple(list(x)))
+    time.sleep(1)
     
-txt = open('barcode.txt','a')
-# txt.write(decode(x))
+wanted_x = [0, 0, 240, 0, 254, 0, 0, 240, 0, 254, 0, 0, 240, 0, 0, 240, 0, 0, 0, 192, 0, 254, 0, 0, 240, 0, 0, 240, 0, 0, 240, 0, 0, 240, 0, 0, 0, 0, 0, 0, 254, 0, 0, 240, 0, 254, 0, 254, 0, 0, 0, 0, 0, 0, 0, 240, 0, 254, 0, 0, 0, 0, 0]
+
+if wanted_x == list(x):
+    print('matched')
+else:
+    print('no match')
+
+
+
