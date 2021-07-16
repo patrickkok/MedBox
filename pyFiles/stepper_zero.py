@@ -43,14 +43,14 @@ def turn_stepper(deg, direction):
 
 def turn_servo(pos):
     pi = pigpio.pi()
-    if pos == 1500:
+    if pos == 1000:
         for k in range (500, pos+1, 50):
             pi.set_servo_pulsewidth(24,k)
-            sleep(0.1)
+            sleep(0.02)
     elif pos == 500:
-        for l in range (1500, pos-1, -50):
+        for l in range (1000, pos-1, -50):
             pi.set_servo_pulsewidth(24,l)
-            sleep(0.1)
+            sleep(0.02)
     
     sleep(1)
     pi.set_servo_pulsewidth(24,0)
@@ -101,6 +101,7 @@ def calc_turn_angle(current, destination):
 def dispense(med_id, qty):
     default = 500
     dispense = 1500
+    qty_left = qty
     with open('/home/pi/Documents/MedBox/pyFiles/container.json', 'r') as f:
         container = json.load(f)
     current = int(container['current_pos'])
@@ -114,22 +115,28 @@ def dispense(med_id, qty):
     ang, dire = calc_turn_angle(current, destination)
     print(ang, dire)
     turn_stepper(ang, dire)
-    lower_nozzle() #turns on pump and lowers vacuum nozzle, the nozzle will rise after getting clsoe to a pill
-    turn_servo(dispense)#moves nozzle over the dispensing area
-    VALVE.on()
-    sleep(1)
-    VALVE.on()
-    PUMP.off()
-    VALVE.off()
-    turn_servo(default)
+    while qty_left != 0:
+        lower_nozzle() #turns on pump and lowers vacuum nozzle, the nozzle will rise after getting clsoe to a pill
+        turn_servo(dispense)#moves nozzle over the dispensing area
+        VALVE.on()
+        sleep(1)
+        PUMP.off()
+        VALVE.off()
+        turn_servo(default)
+        qty_left = qty_left - 1
     #update pill amount in json
     return None
 # dispense(1)
 import os
 # os.system('sudo pigpiod')
 
-dispense(51,1)
-
+# dispense(51,1)
+default = 500
+dispense = 1000
+turn_servo(dispense)
+sleep(2)
+turn_servo(default)
+print('done')
 
 
     
