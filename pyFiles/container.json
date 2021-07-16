@@ -1,0 +1,27 @@
+{
+	"current_pos": 2,
+
+	"container_1":{
+		"medicine":{
+			"id": 51}},
+	"container_2":{
+		"medicine":{
+			"id": 52}},
+	"container_3":{
+		"medicine":{
+			"id": 53}},
+
+	"container_4":{
+		"medicine":{
+			"id": 54}},
+
+	"container_5":{
+		"medicine":{
+			"id": 55}},
+
+	"container_6":{
+		"medicine":{
+			"id": 56}}
+}
+
+	
