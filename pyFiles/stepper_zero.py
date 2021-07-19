@@ -16,7 +16,7 @@ CCW = 0
 SPR = 200
 SLEEP.off() #puts the board in sleep mode
 DIR.on() #sets to clockwise
-delay = 0.0208
+delay = 1.2/SPR
 
 # setup pump pins
 VALVE = gpio.OutputDevice(13)
@@ -31,12 +31,13 @@ def turn_stepper(deg, direction):
     DIR.on() if direction == 1 else DIR.off()
     steps = int(SPR*deg/360)
     SLEEP.on()
-#     STEP.blink(n=steps)
+    sleep(0.5)
     for x in range(steps):
         STEP.on()
         sleep(delay)
         STEP.off()
         sleep(delay)
+    sleep(0.5)
     SLEEP.off()
     print('turnt')
     #add in an update of the current pos in json file
@@ -54,14 +55,6 @@ def turn_servo(pos):
     
     sleep(1)
     pi.set_servo_pulsewidth(24,0)
-    
-# turn_servo(500)
-# sleep(3)
-# print('done 500')
-# for j in range(0,501, 50):
-#     turn_servo(500+j)
-#     sleep(0.05)
-# turn_servo(1000)
 
 def lower_nozzle():
     pi = pigpio.pi()
@@ -100,10 +93,11 @@ def calc_turn_angle(current, destination):
 
 def dispense(med_id, qty):
     default = 500
-    dispense = 1500
+    dispense = 1000
     qty_left = qty
     with open('/home/pi/Documents/MedBox/pyFiles/container.json', 'r') as f:
         container = json.load(f)
+    f.close()
     current = int(container['current_pos'])
     print(current)
     for i in range(1,13):
@@ -112,30 +106,39 @@ def dispense(med_id, qty):
             destination = i
             break
     print(destination)
-    ang, dire = calc_turn_angle(current, destination)
-    print(ang, dire)
-    turn_stepper(ang, dire)
+    if current != destination:
+        ang, dire = calc_turn_angle(current, destination)
+        print(ang, dire)
+        turn_stepper(ang, dire)
+        container['current_pos'] = destination
+    else:
+        None
     while qty_left != 0:
         lower_nozzle() #turns on pump and lowers vacuum nozzle, the nozzle will rise after getting clsoe to a pill
         turn_servo(dispense)#moves nozzle over the dispensing area
+        sleep(2)
         VALVE.on()
-        sleep(1)
         PUMP.off()
         VALVE.off()
+        sleep(2)
         turn_servo(default)
         qty_left = qty_left - 1
-    #update pill amount in json
+    container['container_'+str(destination)]['quantity_left'] -= qty#update pill amount in json
+    with open('/home/pi/Documents/MedBox/pyFiles/container.json', 'w') as f:
+        json.dump(container,f)
+    f.close()
     return None
-# dispense(1)
-import os
+
+# import os
 # os.system('sudo pigpiod')
 
-# dispense(51,1)
-default = 500
-dispense = 1000
-turn_servo(dispense)
-sleep(2)
-turn_servo(default)
+dispense(52,1)
+# default = 500
+# dispense = 1000
+# turn_servo(dispense)
+# sleep(2)
+# turn_servo(default)
+
 print('done')
 
 
