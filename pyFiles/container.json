@@ -1,27 +1,124 @@
 {
-	"current_pos": 2,
+    "current_pos": 1,
 
-	"container_1":{
-		"medicine":{
-			"id": 51}},
-	"container_2":{
-		"medicine":{
-			"id": 52}},
-	"container_3":{
-		"medicine":{
-			"id": 53}},
-
-	"container_4":{
-		"medicine":{
-			"id": 54}},
-
-	"container_5":{
-		"medicine":{
-			"id": 55}},
-
-	"container_6":{
-		"medicine":{
-			"id": 56}}
+    "container_1":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    },
+    "container_2":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    },
+    "container_3":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    },
+    "container_4":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    },
+    "container_5":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    },
+    "container_6":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    },
+    "container_7":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    },
+    "container_8":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    },
+    "container_9":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    },
+    "container_10":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    },
+    "container_11":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    },
+    "container_12":{
+        "angleServo": 12,
+        "filled": 0,
+        "quantity_left": 12,
+        "medicine":{
+            "id": 1,
+            "name": "asprin",
+            "message":"drink with water"
+        }
+    }
 }
-
-	
