@@ -3,6 +3,7 @@ import gpiozero as gpio
 import RPi.GPIO as GPIO
 import pigpio
 import json
+import serial
 
 GPIO.setmode(GPIO.BCM)
 
@@ -25,24 +26,8 @@ DIST = gpio.InputDevice(23) #0 means that smth is close
 VALVE.off()
 PUMP.off()
 
-
-
-def turn_stepper(deg, direction):
-    SPR = 200
-    delay = 1.2/SPR
-    DIR.on() if direction == 1 else DIR.off()
-    steps = int(SPR*deg/360)
-    SLEEP.on()
-    sleep(0.5)
-    for x in range(steps):
-        STEP.on()
-        sleep(delay)
-        STEP.off()
-        sleep(delay)
-    sleep(0.5)
-    SLEEP.off()
-    print('turnt')
-    #add in an update of the current pos in json file
+SCANNER = GPIO.OutputDevice(4)
+SCAN = GPIO.OutputDevice(27)
 
 def turn_servo(pos):
     pi = pigpio.pi()
@@ -79,42 +64,13 @@ def lower_nozzle():
         pi.set_servo_pulsewidth(17, 0)
         print('interrupted')
 
-def calc_turn_angle(current, destination):
-    ang = destination - current
-    if 0 <= ang <= 6:
-        return (30*ang),CW
-    elif 7 <= ang <= 11:
-        ang = 12-ang
-        return (30*ang),CCW
-    elif -11 <= ang <= -7:
-        ang = 12 + ang
-        return (30*ang),CW
-    elif -6 <= ang <=-1:
-        ang = (-1)*ang
-        return (30*ang),CCW
-
 def dispense(med_id, qty):
     default = 500
     dispense = 1000
     qty_left = qty
-    with open('/home/pi/Documents/MedBox/pyFiles/container.json', 'r') as f:
-        container = json.load(f)
-    f.close()
-    current = int(container['current_pos'])
-    print(current)
-    for i in range(1,13):
-        container_med_id = container['container_'+str(i)]['medicine']['id']
-        if container_med_id == med_id:
-            destination = i
-            break
-    print(destination)
-    if current != destination:
-        ang, dire = calc_turn_angle(current, destination)
-        print(ang, dire)
-        turn_stepper(ang, dire)
-        container['current_pos'] = destination
-    else:
-        None
+    container = Containers(DIR, STEP, SLEEP)
+    container_id = container.getContainer(med_id)
+    container.rotateContainerToDispenseArea(container_id)
     while qty_left != 0:
         lower_nozzle() #turns on pump and lowers vacuum nozzle, the nozzle will rise after getting clsoe to a pill
         turn_servo(dispense)#moves nozzle over the dispensing area
@@ -125,10 +81,8 @@ def dispense(med_id, qty):
         sleep(2)
         turn_servo(default)
         qty_left = qty_left - 1
-    container['container_'+str(destination)]['quantity_left'] -= qty#update pill amount in json
-    with open('/home/pi/Documents/MedBox/pyFiles/container.json', 'w') as f:
-        json.dump(container,f)
-    f.close()
+    container.updateContainerInformation(container_id, -qty)
+    container.writeToFile()
     return True
 
 
@@ -148,7 +102,7 @@ def dispense(med_id, qty):
 
 def refillProcess() : 
     # pull updated prescription 
-    container = Containers() 
+    container = Containers(DIR, STEP, SLEEP) 
     stateMachine = True ; 
     state = 'barcode'
     while(stateMachine) : 
@@ -195,11 +149,29 @@ def refillComplete() :
 
 
 def checkBarcode() : 
-    # returns the medicine id from the scanned barcode 
-    # checks if the id is valid 
-    # if not scanned returns None 
-    # fill by patrick 
-    pass 
+    ser = serial.Serial("/dev/ttyS0", 115200, timeout=0.5)
+    SCANNER.on()
+    SCAN.on() #button not pressed
+    info = b''
+    while info == b'':
+        SCAN.off()
+        counter = 0
+        while info == b'' and counter <= 7:
+            info = ser.readline()
+            print(tuple(list(x)))
+            sleep(1)
+            counter += 1
+        SCAN.on()
+        sleep(1)
+    f = open('med_id.json')
+    med_id_check = json.load(f)
+    for i in med_id_check:
+        if i == info:
+            return med_id_check[i]["id"]
+        else:
+            None
+    return None 
+    
 
 
 def pullPrescription() : 
@@ -267,7 +239,7 @@ class Containers() :
             ang = (-1)*ang
             return (30*ang),CCW
 
-    def turn_stepper(deg, direction):
+    def turn_stepper(self, deg, direction):
         SPR = 200
         delay = 1.2/SPR
         self.DIR.on() if direction == 1 else self.DIR.off()
@@ -288,11 +260,25 @@ class Containers() :
         self.data[container_id]["quantity_left"] += number_of_pills 
 
     def rotateContainerToRefillArea(self,container_id) : 
-        # given a container id , rotate it the the refill area 
+        offset = 2
+        ids = int(container_id[-1])
+        current = int(self.data['current_pos'])  #current container at the refill spot
+        destination = ids - offset
+        if destination <= 0 :
+            destination = 12 - destination
+        else:
+            None
+        if current != destination:
+            ang, dire = self.calc_turn_angle(current, destination)
+            print(ang, dire)
+            self.turn_stepper(ang, dire)
+            self.data['current_pos'] = destination
+            self.current_pos = destination
+        else:
+            None
         # return true upon success and false upon failure 
-        # to be done by patrick
-        # update self.current_pos as required
         return True 
+        
 
     def rotateContainerToDispenseArea(self, container_id) : 
         ids = int(container_id[-1])
@@ -314,12 +300,11 @@ class Containers() :
         with open("container.json", 'w') as outfile:
             json.dump(self.data, outfile)
 
-container = Containers(DIR, )    
-
+container = Containers(DIR, STEP, SLEEP)    
 # import os
 # os.system('sudo pigpiod')
 
-dispense(52,1)
+#dispense(52,1)
 # default = 500
 # dispense = 1000
 # turn_servo(dispense)
