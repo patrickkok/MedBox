@@ -26,8 +26,8 @@ DIST = gpio.InputDevice(23) #0 means that smth is close
 VALVE.off()
 PUMP.off()
 
-SCANNER = GPIO.OutputDevice(4)
-SCAN = GPIO.OutputDevice(27)
+SCANNER = gpio.OutputDevice(4)
+SCAN = gpio.OutputDevice(27)
 
 def turn_servo(pos):
     pi = pigpio.pi()
@@ -65,8 +65,8 @@ def lower_nozzle():
         print('interrupted')
 
 def dispense(med_id, qty):
-    default = 500
-    dispense = 1000
+    default = 1000
+    dispense = 500
     qty_left = qty
     container = Containers(DIR, STEP, SLEEP)
     container_id = container.getContainer(med_id)
@@ -76,6 +76,7 @@ def dispense(med_id, qty):
         turn_servo(dispense)#moves nozzle over the dispensing area
         sleep(2)
         VALVE.on()
+        sleep(1)
         PUMP.off()
         VALVE.off()
         sleep(2)
@@ -148,23 +149,28 @@ def refillComplete() :
     return 
 
 
-def checkBarcode() : 
+def checkBarcode() :
+    # turn on scanner and reads te barcode. returns a 5 digit id
     ser = serial.Serial("/dev/ttyS0", 115200, timeout=0.5)
     SCANNER.on()
-    SCAN.on() #button not pressed
+    SCAN.off() #button not pressed
     info = b''
+    sleep(1)
     while info == b'':
-        SCAN.off()
+        print('scanning')
+        SCAN.on()
         counter = 0
-        while info == b'' and counter <= 7:
+        while info == b'' and counter <= 4:
             info = ser.readline()
-            print(tuple(list(x)))
             sleep(1)
             counter += 1
-        SCAN.on()
+        SCAN.off()
         sleep(1)
     f = open('med_id.json')
     med_id_check = json.load(f)
+    info = str(tuple(list(info)))
+    print(info)
+    SCANNER.off()
     for i in med_id_check:
         if i == info:
             return med_id_check[i]["id"]
@@ -194,7 +200,7 @@ class Containers() :
     def extractContainerData(self) : 
         f  = open('container.json')
         self.data = json.load(f)
-        self.current_pos = data["current_pos"]
+        self.current_pos = self.data["current_pos"]
         for i in self.data:
             if i!="current_pos" : 
                 if self.data[i]["filled"]==1 : 
@@ -300,16 +306,18 @@ class Containers() :
         with open("container.json", 'w') as outfile:
             json.dump(self.data, outfile)
 
-container = Containers(DIR, STEP, SLEEP)    
+# container = Containers(DIR, STEP, SLEEP)    
 # import os
 # os.system('sudo pigpiod')
 
-#dispense(52,1)
+# dispense(51,1)
+
 # default = 500
 # dispense = 1000
 # turn_servo(dispense)
 # sleep(2)
 # turn_servo(default)
+print(checkBarcode())
 
 print('done')
 
