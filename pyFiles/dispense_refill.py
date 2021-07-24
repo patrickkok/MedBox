@@ -4,6 +4,7 @@ import RPi.GPIO as GPIO
 import pigpio
 import json
 import serial
+import vlc 
 
 GPIO.setmode(GPIO.BCM)
 
@@ -28,6 +29,11 @@ PUMP.off()
 
 SCANNER = gpio.OutputDevice(4)
 SCAN = gpio.OutputDevice(27)
+
+def sound_alarm():
+    #pip3 install python-vlc
+    # sounds alarm 
+    return True
 
 def turn_servo(pos):
     pi = pigpio.pi()
