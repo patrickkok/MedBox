@@ -30,9 +30,15 @@ PUMP.off()
 SCANNER = gpio.OutputDevice(4)
 SCAN = gpio.OutputDevice(27)
 
-def sound_alarm():
-    #pip3 install python-vlc
+def play_alarm():
+    global alarm
+    alarm = vlc.MediaPlayer('samsung_1hr.mp3')
+    alarm.play()
     # sounds alarm 
+    return True
+
+def stop_alarm():
+    alarm.stop()
     return True
 
 def turn_servo(pos):
@@ -323,7 +329,10 @@ class Containers() :
 # turn_servo(dispense)
 # sleep(2)
 # turn_servo(default)
-print(checkBarcode())
+
+play_alarm()
+sleep(10)
+stop_alarm()
 
 print('done')
 
