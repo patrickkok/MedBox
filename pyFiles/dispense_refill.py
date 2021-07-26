@@ -4,7 +4,7 @@ import RPi.GPIO as GPIO
 import pigpio
 import json
 import serial
-import vlc 
+import vlc
 
 GPIO.setmode(GPIO.BCM)
 
@@ -330,9 +330,29 @@ class Containers() :
 # sleep(2)
 # turn_servo(default)
 
-play_alarm()
-sleep(10)
-stop_alarm()
+import board
+import busio
+i2c = busio.I2C(board.SCL, board.SDA)
+
+import adafruit_ads1x15.ads1115 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
+ads = ADS.ADS1115(i2c)
+chan = AnalogIn(ads, ADS.P0)
+
+
+PUMP.on()
+sleep(0.5)
+cut_off = 12400
+try:
+    while chan.value >= cut_off:
+#         min_val = min(chan.value, min_val)
+        print(chan.value)
+        
+        sleep(0.11)
+    PUMP.off()
+    print('f yeah')
+except KeyboardInterrupt:
+    PUMP.off()
 
 print('done')
 
