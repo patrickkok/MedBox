@@ -27,8 +27,20 @@ DIST = gpio.InputDevice(23) #0 means that smth is close
 VALVE.off()
 PUMP.off()
 
+# setup scanner pins
 SCANNER = gpio.OutputDevice(4)
 SCAN = gpio.OutputDevice(27)
+
+# setup current sensor pins and variables
+import board
+import busio
+i2c = busio.I2C(board.SCL, board.SDA)
+
+import adafruit_ads1x15.ads1115 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
+ads = ADS.ADS1115(i2c)
+chan = AnalogIn(ads, ADS.P0)
+
 
 def play_alarm():
     global alarm
@@ -319,7 +331,8 @@ class Containers() :
             json.dump(self.data, outfile)
 
 # container = Containers(DIR, STEP, SLEEP)    
-# import os
+import os
+os.system('sudo killall pigpiod')
 # os.system('sudo pigpiod')
 
 # dispense(51,1)
@@ -329,22 +342,15 @@ class Containers() :
 # turn_servo(dispense)
 # sleep(2)
 # turn_servo(default)
-
-import board
-import busio
-i2c = busio.I2C(board.SCL, board.SDA)
-
-import adafruit_ads1x15.ads1115 as ADS
-from adafruit_ads1x15.analog_in import AnalogIn
-ads = ADS.ADS1115(i2c)
-chan = AnalogIn(ads, ADS.P0)
-
+play_alarm()
+sleep(5)
+stop_alarm()
 
 PUMP.on()
 sleep(0.5)
 cut_off = 12400
 try:
-    while chan.value >= cut_off:
+    while chan.value <= cut_off:
 #         min_val = min(chan.value, min_val)
         print(chan.value)
         
