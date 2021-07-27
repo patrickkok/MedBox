@@ -44,7 +44,7 @@ chan = AnalogIn(ads, ADS.P0)
 
 def play_alarm():
     global alarm
-    alarm = vlc.MediaPlayer('samsung_1hr.mp3')
+    alarm = vlc.MediaPlayer('samsung_alarm.mp3')
     alarm.play()
     # sounds alarm 
     return True
@@ -70,14 +70,15 @@ def turn_servo(pos):
 def lower_nozzle():
     pi = pigpio.pi()
     pi.set_servo_pulsewidth(17,2000)
-    sleep(1) #delete later
+    cutoff = 12400
     PUMP.on()
     VALVE.off()
+    sleep(1)
     try:
         for i in range(0, 1001, 10):
             pi.set_servo_pulsewidth(17, 2000-i)
             sleep(0.3)
-            if DIST.value == 0:
+            if chan.value >= cutoff:
                 pi.set_servo_pulsewidth(17, 2000)
                 sleep(2)
                 pi.set_servo_pulsewidth(17, 0)
@@ -331,34 +332,35 @@ class Containers() :
             json.dump(self.data, outfile)
 
 # container = Containers(DIR, STEP, SLEEP)    
-import os
-os.system('sudo killall pigpiod')
+# import os
+# os.system('sudo killall pigpiod')
 # os.system('sudo pigpiod')
 
-# dispense(51,1)
+dispense(51,1)
 
 # default = 500
 # dispense = 1000
 # turn_servo(dispense)
 # sleep(2)
 # turn_servo(default)
-play_alarm()
-sleep(5)
-stop_alarm()
-
-PUMP.on()
-sleep(0.5)
-cut_off = 12400
-try:
-    while chan.value <= cut_off:
-#         min_val = min(chan.value, min_val)
-        print(chan.value)
-        
-        sleep(0.11)
-    PUMP.off()
-    print('f yeah')
-except KeyboardInterrupt:
-    PUMP.off()
+# print('playing')
+# play_alarm()
+# sleep(5)
+# stop_alarm()
+# 
+# PUMP.on()
+# sleep(0.5)
+# cut_off = 12400
+# try:
+#     while chan.value <= cut_off:
+# #         min_val = min(chan.value, min_val)
+#         print(chan.value)
+#         
+#         sleep(0.11)
+#     PUMP.off()
+#     print('f yeah')
+# except KeyboardInterrupt:
+#     PUMP.off()
 
 print('done')
 
