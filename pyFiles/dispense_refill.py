@@ -70,7 +70,7 @@ def turn_servo(pos):
 def lower_nozzle():
     pi = pigpio.pi()
     pi.set_servo_pulsewidth(17,2000)
-    cutoff = 12400
+    cutoff = 12550
     PUMP.on()
     VALVE.off()
     sleep(1)
@@ -78,6 +78,7 @@ def lower_nozzle():
         for i in range(0, 1001, 10):
             pi.set_servo_pulsewidth(17, 2000-i)
             sleep(0.3)
+            print(chan.value, cutoff)
             if chan.value >= cutoff:
                 pi.set_servo_pulsewidth(17, 2000)
                 sleep(2)
@@ -336,7 +337,7 @@ class Containers() :
 # os.system('sudo killall pigpiod')
 # os.system('sudo pigpiod')
 
-# dispense(51,1)
+dispense(52,1)
 
 # default = 500
 # dispense = 1000
@@ -349,11 +350,12 @@ class Containers() :
 # sleep(5)
 # stop_alarm()
 
-print(checkBarcode())
-print('done')
+# from playsound import playsound
+# playsound('samsung_alarm.mp3')
+# print('done')
 
 
-    
+
 
 
 
