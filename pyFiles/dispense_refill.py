@@ -336,32 +336,20 @@ class Containers() :
 # os.system('sudo killall pigpiod')
 # os.system('sudo pigpiod')
 
-dispense(51,1)
+# dispense(51,1)
 
 # default = 500
 # dispense = 1000
 # turn_servo(dispense)
 # sleep(2)
 # turn_servo(default)
+
 # print('playing')
 # play_alarm()
 # sleep(5)
 # stop_alarm()
-# 
-# PUMP.on()
-# sleep(0.5)
-# cut_off = 12400
-# try:
-#     while chan.value <= cut_off:
-# #         min_val = min(chan.value, min_val)
-#         print(chan.value)
-#         
-#         sleep(0.11)
-#     PUMP.off()
-#     print('f yeah')
-# except KeyboardInterrupt:
-#     PUMP.off()
 
+print(checkBarcode())
 print('done')
 
 
