@@ -5,6 +5,9 @@ import pigpio
 import json
 import serial
 import vlc
+import pygame
+pygame.init()
+pygame.mixer.music.load('/home/pi/Documents/MedBox/pyFiles/samsung_alarm.mp3')
 
 GPIO.setmode(GPIO.BCM)
 
@@ -109,7 +112,7 @@ def dispense(med_id, qty):
         turn_servo(default)
         qty_left = qty_left - 1
     container.updateContainerInformation(container_id, -qty)
-    container.writeToFile()
+    container.writeToFile()    
     return True
 
 
@@ -337,7 +340,7 @@ class Containers() :
 # os.system('sudo killall pigpiod')
 # os.system('sudo pigpiod')
 
-dispense(52,1)
+# dispense(52,1)
 
 # default = 500
 # dispense = 1000
@@ -345,14 +348,19 @@ dispense(52,1)
 # sleep(2)
 # turn_servo(default)
 
-# print('playing')
+print('playing')
 # play_alarm()
-# sleep(5)
+# sleep(10)
 # stop_alarm()
 
-# from playsound import playsound
-# playsound('samsung_alarm.mp3')
-# print('done')
+dispense(51, 1)
+pygame.mixer.music.play()
+sleep(10)
+pygame.mixer.music.stop()
+    
+
+
+print('done')
 
 
 
