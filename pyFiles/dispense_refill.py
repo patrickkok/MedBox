@@ -4,7 +4,6 @@ import RPi.GPIO as GPIO
 import pigpio
 import json
 import serial
-import vlc
 import pygame
 pygame.init()
 pygame.mixer.music.load('/home/pi/Documents/MedBox/pyFiles/samsung_alarm.mp3')
@@ -46,34 +45,39 @@ chan = AnalogIn(ads, ADS.P0)
 
 
 def play_alarm():
-    global alarm
-    alarm = vlc.MediaPlayer('samsung_alarm.mp3')
-    alarm.play()
+    pygame.mixer.music.play()
     # sounds alarm 
     return True
 
 def stop_alarm():
-    alarm.stop()
+    pygame.mixer.music.stop()
     return True
 
 def turn_servo(pos):
     pi = pigpio.pi()
-    if pos == 1000:
-        for k in range (500, pos+1, 50):
-            pi.set_servo_pulsewidth(24,k)
-            sleep(0.02)
-    elif pos == 500:
-        for l in range (1000, pos-1, -50):
+    pi.set_PWM_frequency(24, 50)
+    pos_dict = {"default": 1500, "dispense": 1000}
+    pi.set_servo_pulsewidth(24,pos_dict[pos])
+    if pos == "default":
+        pi.set_servo_pulsewidth(24,pos_dict[pos])
+        sleep(0.2)
+    elif pos == "dispense":
+        for l in range (pos_dict[pos]+500, pos_dict[pos]-1, -25):
             pi.set_servo_pulsewidth(24,l)
-            sleep(0.02)
+            sleep(0.5)
     
     sleep(1)
-    pi.set_servo_pulsewidth(24,0)
+#     pi.set_servo_pulsewidth(24,0)
+    return True
+# turn_servo("dispense")
+# sleep(2)
+# turn_servo("default")
+
 
 def lower_nozzle():
     pi = pigpio.pi()
     pi.set_servo_pulsewidth(17,2000)
-    cutoff = 12550
+    cutoff = 12650
     PUMP.on()
     VALVE.off()
     sleep(1)
@@ -94,22 +98,20 @@ def lower_nozzle():
         print('interrupted')
 
 def dispense(med_id, qty):
-    default = 1000
-    dispense = 500
     qty_left = qty
     container = Containers(DIR, STEP, SLEEP)
     container_id = container.getContainer(med_id)
     container.rotateContainerToDispenseArea(container_id)
     while qty_left != 0:
         lower_nozzle() #turns on pump and lowers vacuum nozzle, the nozzle will rise after getting clsoe to a pill
-        turn_servo(dispense)#moves nozzle over the dispensing area
+        turn_servo("dispense")#moves nozzle over the dispensing area
         sleep(2)
         VALVE.on()
         sleep(1)
         PUMP.off()
         VALVE.off()
         sleep(2)
-        turn_servo(default)
+        turn_servo("default")
         qty_left = qty_left - 1
     container.updateContainerInformation(container_id, -qty)
     container.writeToFile()    
@@ -340,24 +342,18 @@ class Containers() :
 # os.system('sudo killall pigpiod')
 # os.system('sudo pigpiod')
 
-# dispense(52,1)
+# dispense(51,1)
 
-# default = 500
+# default = 1500
 # dispense = 1000
-# turn_servo(dispense)
-# sleep(2)
-# turn_servo(default)
-
-print('playing')
-# play_alarm()
-# sleep(10)
-# stop_alarm()
-
-dispense(51, 1)
-pygame.mixer.music.play()
-sleep(10)
-pygame.mixer.music.stop()
-    
+pi = pigpio.pi()
+pi.set_servo_pulsewidth(24,1450)#24
+print('dispense pos')
+sleep(1)
+print('turning to default')
+pi.set_servo_pulsewidth(24,1600)
+sleep(1)
+pi.set_servo_pulsewidth(24,0)
 
 
 print('done')
