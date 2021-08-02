@@ -6,7 +6,7 @@ import json
 import serial
 import pygame
 pygame.init()
-pygame.mixer.music.load('/home/pi/Documents/MedBox/pyFiles/samsung_alarm.mp3')
+pygame.mixer.music.load('/home/pi/Documents/MedBox/pyFiles/smasho_mode_alarm.mp3')
 
 GPIO.setmode(GPIO.BCM)
 
@@ -55,19 +55,11 @@ def stop_alarm():
 
 def turn_servo(pos):
     pi = pigpio.pi()
-    pi.set_PWM_frequency(24, 50)
-    pos_dict = {"default": 1500, "dispense": 1000}
-    pi.set_servo_pulsewidth(24,pos_dict[pos])
-    if pos == "default":
-        pi.set_servo_pulsewidth(24,pos_dict[pos])
-        sleep(0.2)
-    elif pos == "dispense":
-        for l in range (pos_dict[pos]+500, pos_dict[pos]-1, -25):
-            pi.set_servo_pulsewidth(24,l)
-            sleep(0.5)
-    
+#     pi.set_PWM_frequency(24, 50)
+    pos_dict = {"default": 1580, "dispense": 1400}
+    pi.set_servo_pulsewidth(24,pos_dict[pos])    
     sleep(1)
-#     pi.set_servo_pulsewidth(24,0)
+    pi.set_servo_pulsewidth(24,0)
     return True
 # turn_servo("dispense")
 # sleep(2)
@@ -77,7 +69,7 @@ def turn_servo(pos):
 def lower_nozzle():
     pi = pigpio.pi()
     pi.set_servo_pulsewidth(17,2000)
-    cutoff = 12650
+    cutoff = 12450
     PUMP.on()
     VALVE.off()
     sleep(1)
@@ -96,6 +88,10 @@ def lower_nozzle():
         pi.set_servo_pulsewidth(17, 2000)
         pi.set_servo_pulsewidth(17, 0)
         print('interrupted')
+    pi.set_servo_pulsewidth(17, 2000)
+    sleep(1)
+    pi.set_servo_pulsewidth(17, 0)
+    return True
 
 def dispense(med_id, qty):
     qty_left = qty
@@ -321,10 +317,11 @@ class Containers() :
         ids = int(container_id[-1])
         current = int(self.data['current_pos'])
         destination = ids
+        print(current, destination)
         if current != destination:
             ang, dire = self.calc_turn_angle(current, destination)
             print(ang, dire)
-            self.turn_stepper(ang, dire)
+            self.turn_stepper(ang+10, dire)
             self.data['current_pos'] = destination
             self.current_pos = destination
         else:
@@ -337,23 +334,12 @@ class Containers() :
         with open("container.json", 'w') as outfile:
             json.dump(self.data, outfile)
 
-# container = Containers(DIR, STEP, SLEEP)    
+container = Containers(DIR, STEP, SLEEP)
 # import os
 # os.system('sudo killall pigpiod')
 # os.system('sudo pigpiod')
-
-# dispense(51,1)
-
-# default = 1500
-# dispense = 1000
-pi = pigpio.pi()
-pi.set_servo_pulsewidth(24,1450)#24
-print('dispense pos')
-sleep(1)
-print('turning to default')
-pi.set_servo_pulsewidth(24,1600)
-sleep(1)
-pi.set_servo_pulsewidth(24,0)
+container.rotateContainerToDispenseArea("container_6")
+# dispense(52,1)
 
 
 print('done')
