@@ -68,28 +68,29 @@ def turn_servo(pos):
 
 def lower_nozzle():
     pi = pigpio.pi()
-    pi.set_servo_pulsewidth(17,2000)
-    cutoff = 12450
+    max_height = 1950
+    pi.set_servo_pulsewidth(17,max_height)
+    cutoff = 12250
     PUMP.on()
     VALVE.off()
     sleep(1)
     try:
         for i in range(0, 1001, 10):
-            pi.set_servo_pulsewidth(17, 2000-i)
+            pi.set_servo_pulsewidth(17, max_height-i)
             sleep(0.3)
             print(chan.value, cutoff)
             if chan.value >= cutoff:
-                pi.set_servo_pulsewidth(17, 2000)
-                sleep(2)
+                pi.set_servo_pulsewidth(17, max_height)
+                sleep(3)
                 pi.set_servo_pulsewidth(17, 0)
                 break
         
     except KeyboardInterrupt:
-        pi.set_servo_pulsewidth(17, 2000)
+        pi.set_servo_pulsewidth(17, max_height)
         pi.set_servo_pulsewidth(17, 0)
         print('interrupted')
-    pi.set_servo_pulsewidth(17, 2000)
-    sleep(1)
+    pi.set_servo_pulsewidth(17, max_height)
+    sleep(3)
     pi.set_servo_pulsewidth(17, 0)
     return True
 
@@ -334,13 +335,16 @@ class Containers() :
         with open("container.json", 'w') as outfile:
             json.dump(self.data, outfile)
 
-container = Containers(DIR, STEP, SLEEP)
+# container = Containers(DIR, STEP, SLEEP)
 # import os
 # os.system('sudo killall pigpiod')
 # os.system('sudo pigpiod')
-container.rotateContainerToDispenseArea("container_6")
-# dispense(52,1)
+# container.rotateContainerToDispenseArea("container_6")
+dispense(59,1)
 
+# turn_servo("dispense")
+# sleep(2)
+# turn_servo("default")
 
 print('done')
 
