@@ -56,10 +56,23 @@ def stop_alarm():
 def turn_servo(pos):
     pi = pigpio.pi()
 #     pi.set_PWM_frequency(24, 50)
-    pos_dict = {"default": 1580, "dispense": 1400}
-    pi.set_servo_pulsewidth(24,pos_dict[pos])    
-    sleep(1)
-    pi.set_servo_pulsewidth(24,0)
+    servo = "180"
+    if servo == "180":
+        default = 1200
+        dispense = 700
+        if pos == "dispense":
+            for i in range (default, dispense+1, -25):
+                pi.set_servo_pulsewidth(24, i)
+                sleep(0.2)
+            sleep(1)
+            pi.set_servo_pulsewidth(24, 0)
+        elif pos == "default":
+            pi.set_servo_pulsewidth(24, default)
+    elif servo == "continuous":
+        pos_dict = {"default": 1580, "dispense": 1400}
+        pi.set_servo_pulsewidth(24,pos_dict[pos])    
+        sleep(0.9)
+        pi.set_servo_pulsewidth(24,0)
     return True
 # turn_servo("dispense")
 # sleep(2)
@@ -68,15 +81,17 @@ def turn_servo(pos):
 
 def lower_nozzle():
     pi = pigpio.pi()
-    max_height = 1950
+    max_height = 2000
     pi.set_servo_pulsewidth(17,max_height)
-    cutoff = 12250
+#     cutoff = 12350
     PUMP.on()
     VALVE.off()
     sleep(1)
+    cutoff = chan.value + 100
+    pi.set_servo_pulsewidth(17,1300)
     try:
-        for i in range(0, 1001, 10):
-            pi.set_servo_pulsewidth(17, max_height-i)
+        for i in range(1080, 1029, -1):
+            pi.set_servo_pulsewidth(17, i)
             sleep(0.3)
             print(chan.value, cutoff)
             if chan.value >= cutoff:
@@ -88,7 +103,9 @@ def lower_nozzle():
     except KeyboardInterrupt:
         pi.set_servo_pulsewidth(17, max_height)
         pi.set_servo_pulsewidth(17, 0)
+        PUMP.off()
         print('interrupted')
+        
     pi.set_servo_pulsewidth(17, max_height)
     sleep(3)
     pi.set_servo_pulsewidth(17, 0)
@@ -102,7 +119,7 @@ def dispense(med_id, qty):
     while qty_left != 0:
         lower_nozzle() #turns on pump and lowers vacuum nozzle, the nozzle will rise after getting clsoe to a pill
         turn_servo("dispense")#moves nozzle over the dispensing area
-        sleep(2)
+        sleep(0)
         VALVE.on()
         sleep(1)
         PUMP.off()
@@ -299,9 +316,10 @@ class Containers() :
         current = int(self.data['current_pos'])  #current container at the refill spot
         destination = ids - offset
         if destination <= 0 :
-            destination = 12 - destination
+            destination = 12 + destination
         else:
             None
+        print(current, destination)
         if current != destination:
             ang, dire = self.calc_turn_angle(current, destination)
             print(ang, dire)
@@ -339,8 +357,9 @@ class Containers() :
 # import os
 # os.system('sudo killall pigpiod')
 # os.system('sudo pigpiod')
-# container.rotateContainerToDispenseArea("container_6")
+# container.rotateContainerToRefillArea("container_6")
 dispense(59,1)
+# lower_nozzle()
 
 # turn_servo("dispense")
 # sleep(2)
