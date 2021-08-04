@@ -6,7 +6,7 @@ import json
 import serial
 import pygame
 pygame.init()
-pygame.mixer.music.load('/home/pi/Documents/MedBox/pyFiles/smasho_mode_alarm.mp3')
+pygame.mixer.music.load('/home/pi/Documents/MedBox/pyFiles/samsung_alarm.mp3')
 
 GPIO.setmode(GPIO.BCM)
 
@@ -367,13 +367,13 @@ class Containers() :
 # os.system('sudo killall pigpiod')
 # os.system('sudo pigpiod')
 # container.rotateContainerToRefillArea("container_8")
-dispense(59,1)
+# dispense(59,1)
 # lower_nozzle()
 
 # turn_servo("dispense")
 # sleep(2)
 # turn_servo("default")
-
+print(checkBarcode())
 print('done')
 
 
