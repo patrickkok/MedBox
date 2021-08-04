@@ -26,6 +26,7 @@ delay = 2.4/SPR
 VALVE = gpio.OutputDevice(13)
 PUMP = gpio.OutputDevice(19)
 DIST = gpio.InputDevice(23) #0 means that smth is close
+NDIST = gpio.InputDevice(22) #0 means that smth is close
 VALVE.off()
 PUMP.off()
 
@@ -55,6 +56,7 @@ def stop_alarm():
 
 def turn_servo(pos):
     pi = pigpio.pi()
+    pi.set_pull_up_down(24, pigpio.PUD_DOWN)
 #     pi.set_PWM_frequency(24, 50)
     servo = "180"
     if servo == "180":
@@ -81,23 +83,30 @@ def turn_servo(pos):
 
 def lower_nozzle():
     pi = pigpio.pi()
+    pi.set_pull_up_down(17, pigpio.PUD_DOWN)
     max_height = 2000
     pi.set_servo_pulsewidth(17,max_height)
 #     cutoff = 12350
     PUMP.on()
     VALVE.off()
     sleep(1)
-    cutoff = chan.value + 100
+    cutoff = chan.value + 80
     pi.set_servo_pulsewidth(17,1300)
     try:
-        for i in range(max_height, 1029, -1): #1080
+        for i in range(max_height, 1029, -100):
             pi.set_servo_pulsewidth(17, i)
-            sleep(0.3)
+            sleep(0.5)
             print(chan.value, cutoff)
-            if chan.value >= cutoff:
-                pi.set_servo_pulsewidth(17, max_height)
-                sleep(3)
-                pi.set_servo_pulsewidth(17, 0)
+            if NDIST.value == 0:
+                for j in range(i, 1019, -10):
+                    pi.set_servo_pulsewidth(17, j)
+                    sleep(1)
+                    if chan.value >= cutoff:
+                        pi.set_servo_pulsewidth(17, max_height)
+                        sleep(3)
+                        pi.set_servo_pulsewidth(17, 0)
+                        print("pill picked up")
+                        break
                 break
         
     except KeyboardInterrupt:
@@ -354,12 +363,12 @@ class Containers() :
             json.dump(self.data, outfile)
 
 # container = Containers(DIR, STEP, SLEEP)
-import os
+# import os
 # os.system('sudo killall pigpiod')
-os.system('sudo pigpiod')
+# os.system('sudo pigpiod')
 # container.rotateContainerToRefillArea("container_8")
-# dispense(59,1)
-lower_nozzle()
+dispense(59,1)
+# lower_nozzle()
 
 # turn_servo("dispense")
 # sleep(2)
