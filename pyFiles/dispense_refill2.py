@@ -5,10 +5,19 @@ import pigpio
 import json
 import serial
 import pygame
+import os
 pygame.init()
 pygame.mixer.music.load('/home/pi/Documents/MedBox/pyFiles/samsung_alarm.mp3')
 
+os.system('sudo pigpiod')
+
 GPIO.setmode(GPIO.BCM)
+pi = pigpio.pi()
+pi.set_servo_pulsewidth(17,1970)
+pi.set_servo_pulsewidth(24,1500)
+sleep(2)
+pi.set_servo_pulsewidth(17,0)
+pi.set_servo_pulsewidth(24,0)
 
 # setup all pins
 #stepper motor
@@ -60,10 +69,10 @@ def turn_servo(pos):
 #     pi.set_PWM_frequency(24, 50)
     servo = "180"
     if servo == "180":
-        default = 1200
-        dispense = 700
+        default = 1500
+        dispense = 875
         if pos == "dispense":
-            for i in range (default, dispense+1, -25):
+            for i in range (default-200, dispense-1, -25):
                 pi.set_servo_pulsewidth(24, i)
                 sleep(0.2)
             sleep(1)
@@ -76,21 +85,19 @@ def turn_servo(pos):
         sleep(0.9)
         pi.set_servo_pulsewidth(24,0)
     return True
-# turn_servo("dispense")
-# sleep(2)
-# turn_servo("default")
+
 
 
 def lower_nozzle():
     pi = pigpio.pi()
     pi.set_pull_up_down(17, pigpio.PUD_DOWN)
-    max_height = 2000
+    max_height = 1970
     pi.set_servo_pulsewidth(17,max_height)
 #     cutoff = 12350
     PUMP.on()
     VALVE.off()
     sleep(1)
-    cutoff = chan.value + 80
+    cutoff = chan.value + 60
     pi.set_servo_pulsewidth(17,1300)
     try:
         for i in range(max_height, 1029, -100):
@@ -98,21 +105,24 @@ def lower_nozzle():
             sleep(0.5)
             print(chan.value, cutoff)
             if NDIST.value == 0:
-                for j in range(i, 1019, -10):
+                for j in range(i-50, 1019, -5):
                     pi.set_servo_pulsewidth(17, j)
-                    sleep(1)
+                    sleep(0.5)
+                    print(chan.value, cutoff)
                     if chan.value >= cutoff:
                         pi.set_servo_pulsewidth(17, max_height)
                         sleep(3)
                         pi.set_servo_pulsewidth(17, 0)
                         print("pill picked up")
                         break
+                sleep(1)
                 break
         
     except KeyboardInterrupt:
         pi.set_servo_pulsewidth(17, max_height)
         pi.set_servo_pulsewidth(17, 0)
-        PUMP.off()
+#         PUMP.off()
+        sleep(4)
         print('interrupted')
         
     pi.set_servo_pulsewidth(17, max_height)
@@ -128,12 +138,11 @@ def dispense(med_id, qty):
     while qty_left != 0:
         lower_nozzle() #turns on pump and lowers vacuum nozzle, the nozzle will rise after getting clsoe to a pill
         turn_servo("dispense")#moves nozzle over the dispensing area
-        sleep(0)
         VALVE.on()
         sleep(1)
         PUMP.off()
         VALVE.off()
-        sleep(2)
+        sleep(0.5)
         turn_servo("default")
         qty_left = qty_left - 1
     container.updateContainerInformation(container_id, -qty)
@@ -223,7 +232,6 @@ def checkBarcode() :
     f = open('med_id.json')
     med_id_check = json.load(f)
     info = str(tuple(list(info)))
-    print(info)
     SCANNER.off()
     for i in med_id_check:
         if i == info:
@@ -363,18 +371,16 @@ class Containers() :
             json.dump(self.data, outfile)
 
 # container = Containers(DIR, STEP, SLEEP)
-# import os
-# os.system('sudo killall pigpiod')
-# os.system('sudo pigpiod')
 # container.rotateContainerToRefillArea("container_8")
-# dispense(59,1)
+dispense(54,1)
 # lower_nozzle()
 
 # turn_servo("dispense")
 # sleep(2)
 # turn_servo("default")
-print(checkBarcode())
+# print(checkBarcode())
 print('done')
+# PUMP.off()
 
 
 
